@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author macpc3
  */
-public interface UsersDao {
+interface UsersDao {
     List<UserDto> findAll() throws Exception;
     UserDto findById(String id) throws Exception;
     int insert(UserDto user) throws Exception;
