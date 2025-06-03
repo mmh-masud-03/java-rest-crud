@@ -9,7 +9,7 @@ package features.users.dto;
  * @author macpc3
  */
 public class UserDto {
-    public String USER_ID, NAME, EMAIL, DOB, CREATE_DATE, CREATE_BY,UPDATE_DATE,UPDATE_BY;
+    public String USER_ID, NAME, EMAIL, DOB, CREATE_DATE, CREATE_BY;
 
     public String getUSER_ID() {
         return USER_ID;
@@ -58,10 +58,7 @@ public class UserDto {
     public void setCREATE_BY(String CREATE_BY) {
         this.CREATE_BY = CREATE_BY;
     }
-   public String getUPDATE_DATE() { return UPDATE_DATE; }
-    public void setUPDATE_DATE(String UPDATE_DATE) { this.UPDATE_DATE = UPDATE_DATE; }
-    public String getUPDATE_BY() { return UPDATE_BY; }
-    public void setUPDATE_BY(String UPDATE_BY) { this.UPDATE_BY = UPDATE_BY; }
+
     @Override
     public String toString() {
         return "UserDto{" + "USER_ID=" + USER_ID + ", NAME=" + NAME + ", EMAIL=" + EMAIL + ", DOB=" + DOB + ", CREATE_DATE=" + CREATE_DATE + ", CREATE_BY=" + CREATE_BY + '}';

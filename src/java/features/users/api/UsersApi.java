@@ -173,6 +173,144 @@ public class UsersApi extends HttpServlet {
     }
 
     /**
+     * Handles the HTTP <code>PUT</code> method.
+     */
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json");
+        JSONObject result = new JSONObject();
+        
+        try {
+            String pathInfo = request.getPathInfo();
+            if (pathInfo == null || pathInfo.length() <= 1) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                result.put("status", "error");
+                result.put("message", "User ID is required for update");
+                response.getWriter().write(result.toString());
+                return;
+            }
+            
+            String userId = pathInfo.substring(1);
+            String requestBody = getRequestBody(request);
+            JSONObject jsonData = JsonDecoder.getJson(requestBody);
+            
+            // Check if user exists
+            UserDto existingUser = dao.findById(userId);
+            if (existingUser == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                result.put("status", "error");
+                result.put("message", "User not found");
+                response.getWriter().write(result.toString());
+                return;
+            }
+            
+            // Validate required fields
+            String name = JsonDecoder.getJsonValue(jsonData, "name");
+            String email = JsonDecoder.getJsonValue(jsonData, "email");
+            String dob = JsonDecoder.getJsonValue(jsonData, "dob");
+            
+            if (name.isEmpty() || email.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                result.put("status", "error");
+                result.put("message", "Name and email are required fields");
+                response.getWriter().write(result.toString());
+                return;
+            }
+            
+            // Update user data
+            UserDto user = new UserDto();
+            user.setUSER_ID(userId);
+            user.setNAME(name);
+            user.setEMAIL(email);
+            user.setDOB(dob.isEmpty() ? existingUser.getDOB() : dob);
+     
+            int rowsAffected = dao.update(user);
+            
+            if (rowsAffected > 0) {
+                // Get updated user data
+                UserDto updatedUser = dao.findById(userId);
+                JSONObject userJson = new JSONObject();
+                userJson.put("id", updatedUser.getUSER_ID());
+                userJson.put("name", updatedUser.getNAME());
+                userJson.put("email", updatedUser.getEMAIL());
+                userJson.put("dob", updatedUser.getDOB());
+                userJson.put("createDate", updatedUser.getCREATE_DATE());
+                userJson.put("createBy", updatedUser.getCREATE_BY());
+                
+                result.put("status", "success");
+                result.put("message", "User updated successfully");
+                result.put("data", userJson);
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                result.put("status", "error");
+                result.put("message", "Failed to update user");
+            }
+            
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            result.put("status", "error");
+            result.put("message", "Internal server error: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        response.getWriter().write(result.toString());
+    }
+
+    /**
+     * Handles the HTTP <code>DELETE</code> method.
+     */
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json");
+        JSONObject result = new JSONObject();
+        
+        try {
+            String pathInfo = request.getPathInfo();
+            if (pathInfo == null || pathInfo.length() <= 1) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                result.put("status", "error");
+                result.put("message", "User ID is required for deletion");
+                response.getWriter().write(result.toString());
+                return;
+            }
+            
+            String userId = pathInfo.substring(1);
+            
+            // Check if user exists
+            UserDto existingUser = dao.findById(userId);
+            if (existingUser == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                result.put("status", "error");
+                result.put("message", "User not found");
+                response.getWriter().write(result.toString());
+                return;
+            }
+            
+            int rowsAffected = dao.delete(userId);
+            
+            if (rowsAffected > 0) {
+                result.put("status", "success");
+                result.put("message", "User deleted successfully");
+                result.put("deletedUserId", userId);
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                result.put("status", "error");
+                result.put("message", "Failed to delete user");
+            }
+            
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            result.put("status", "error");
+            result.put("message", "Internal server error: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        response.getWriter().write(result.toString());
+    }
+
+    /**
      * Returns a short description of the servlet.
      */
     @Override

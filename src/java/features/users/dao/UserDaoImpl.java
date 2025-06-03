@@ -20,18 +20,18 @@ public class UserDaoImpl implements UserDao {
             + "VALUES (?, ?, ?, ?, ?, ?)";
 
     private static final String SQL_UPDATE
-            = "UPDATE APPS_PRACTISE SET NAME = ?, EMAIL = ?, DOB = ?, UPDATE_DATE = ?, UPDATE_BY = ? "
+            = "UPDATE APPS_PRACTISE SET NAME = ?, EMAIL = ?, DOB = ? "
             + "WHERE USER_ID = ?";
 
     private static final String SQL_DELETE
             = "DELETE FROM APPS_PRACTISE WHERE USER_ID = ?";
 
     private static final String SQL_FIND_BY_ID
-            = "SELECT USER_ID, NAME, EMAIL, DOB, CREATE_DATE, CREATE_BY, UPDATE_DATE, UPDATE_BY "
+            = "SELECT USER_ID, NAME, EMAIL, DOB, CREATE_DATE, CREATE_BY "
             + "FROM APPS_PRACTISE WHERE USER_ID = ?";
 
     private static final String SQL_FIND_ALL
-            = "SELECT USER_ID, NAME, EMAIL, DOB, CREATE_DATE, CREATE_BY, UPDATE_DATE, UPDATE_BY "
+            = "SELECT USER_ID, NAME, EMAIL, DOB, CREATE_DATE, CREATE_BY "
             + "FROM APPS_PRACTISE ORDER BY CREATE_DATE DESC";
 
     @Override
@@ -70,9 +70,6 @@ public class UserDaoImpl implements UserDao {
                     user.setDOB(rs.getString("DOB"));
                     user.setCREATE_DATE(rs.getString("CREATE_DATE"));
                     user.setCREATE_BY(rs.getString("CREATE_BY"));
-                    // Handle UPDATE fields that might be null
-                    user.setUPDATE_DATE(rs.getString("UPDATE_DATE"));
-                    user.setUPDATE_BY(rs.getString("UPDATE_BY"));
                 }
             }
         } catch (SQLException e) {
@@ -98,10 +95,7 @@ public class UserDaoImpl implements UserDao {
                 user.setDOB(rs.getString("DOB"));
                 user.setCREATE_DATE(rs.getString("CREATE_DATE"));
                 user.setCREATE_BY(rs.getString("CREATE_BY"));
-                // Handle UPDATE fields that might be null
-                user.setUPDATE_DATE(rs.getString("UPDATE_DATE"));
-                user.setUPDATE_BY(rs.getString("UPDATE_BY"));
-
+                
                 users.add(user);
             }
         } catch (SQLException e) {
@@ -119,9 +113,7 @@ public class UserDaoImpl implements UserDao {
             stmt.setString(1, user.getNAME());
             stmt.setString(2, user.getEMAIL());
             stmt.setString(3, user.getDOB());
-            stmt.setString(4, user.getUPDATE_DATE());
-            stmt.setString(5, user.getUPDATE_BY());
-            stmt.setString(6, user.getUSER_ID()); // WHERE clause parameter
+            stmt.setString(4, user.getUSER_ID()); // WHERE clause parameter
 
             return stmt.executeUpdate();
         } catch (SQLException e) {
