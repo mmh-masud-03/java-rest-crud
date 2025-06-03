@@ -4,6 +4,7 @@
  */
 package core.utility;
 
+import core.db.DBConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
@@ -17,6 +18,7 @@ import org.json.simple.parser.ParseException;
 public class JsonDecoder {
 
     public static String getJsonValue(JSONObject obj, String key) {
+        
         String value = "";
         try {
             value = obj.get(key).toString();
