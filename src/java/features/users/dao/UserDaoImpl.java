@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package features.users.dao;
 
 import core.db.DBConnection;
@@ -9,6 +5,7 @@ import features.users.dto.UserDto;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +13,8 @@ import java.util.List;
  *
  * @author macpc3
  */
-public class UserDaoImpl implements UsersDao {
+public class UserDaoImpl implements UserDao {
     // SQL statements as private constants
-
     private static final String SQL_INSERT
             = "INSERT INTO APPS_PRACTISE (USER_ID, NAME, EMAIL, DOB, CREATE_DATE, CREATE_BY) "
             + "VALUES (?, ?, ?, ?, ?, ?)";
@@ -40,8 +36,9 @@ public class UserDaoImpl implements UsersDao {
 
     @Override
     public int insert(UserDto user) throws Exception {
-
-        try ( Connection conn = new DBConnection().getOracleConnection();  PreparedStatement stmt = conn.prepareStatement(SQL_INSERT)) {
+        try (Connection conn = new DBConnection().getOracleConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_INSERT)) {
+            
             stmt.setString(1, user.getUSER_ID());
             stmt.setString(2, user.getNAME());
             stmt.setString(3, user.getEMAIL());
@@ -50,20 +47,21 @@ public class UserDaoImpl implements UsersDao {
             stmt.setString(6, user.getCREATE_BY());
 
             return stmt.executeUpdate();
-        } catch (Exception e) {
-            System.out.println("Error inserting data" + e.toString());
+        } catch (SQLException e) {
+            System.err.println("Error inserting user: " + e.getMessage());
+            throw new Exception("Failed to insert user", e);
         }
-
-        return 0;
     }
 
     @Override
     public UserDto findById(String userId) throws Exception {
         UserDto user = null;
-        try ( Connection conn = new DBConnection().getOracleConnection();  PreparedStatement stmt = conn.prepareStatement(SQL_FIND_BY_ID)) {
+        try (Connection conn = new DBConnection().getOracleConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_FIND_BY_ID)) {
+            
             stmt.setString(1, userId);
 
-            try ( ResultSet rs = stmt.executeQuery()) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     user = new UserDto();
                     user.setUSER_ID(rs.getString("USER_ID"));
@@ -72,12 +70,14 @@ public class UserDaoImpl implements UsersDao {
                     user.setDOB(rs.getString("DOB"));
                     user.setCREATE_DATE(rs.getString("CREATE_DATE"));
                     user.setCREATE_BY(rs.getString("CREATE_BY"));
+                    // Handle UPDATE fields that might be null
+                    user.setUPDATE_DATE(rs.getString("UPDATE_DATE"));
+                    user.setUPDATE_BY(rs.getString("UPDATE_BY"));
                 }
             }
-
-        } catch (Exception e) {
-            System.out.println("Error finding user" + e.toString());
-
+        } catch (SQLException e) {
+            System.err.println("Error finding user by ID: " + e.getMessage());
+            throw new Exception("Failed to find user by ID", e);
         }
         return user;
     }
@@ -86,7 +86,10 @@ public class UserDaoImpl implements UsersDao {
     public List<UserDto> findAll() throws Exception {
         List<UserDto> users = new ArrayList<>();
 
-        try ( Connection conn = new DBConnection().getOracleConnection();  PreparedStatement stmt = conn.prepareStatement(SQL_FIND_ALL);  ResultSet rs = stmt.executeQuery();) {
+        try (Connection conn = new DBConnection().getOracleConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_FIND_ALL);
+             ResultSet rs = stmt.executeQuery()) {
+            
             while (rs.next()) {
                 UserDto user = new UserDto();
                 user.setUSER_ID(rs.getString("USER_ID"));
@@ -95,48 +98,49 @@ public class UserDaoImpl implements UsersDao {
                 user.setDOB(rs.getString("DOB"));
                 user.setCREATE_DATE(rs.getString("CREATE_DATE"));
                 user.setCREATE_BY(rs.getString("CREATE_BY"));
+                // Handle UPDATE fields that might be null
+                user.setUPDATE_DATE(rs.getString("UPDATE_DATE"));
+                user.setUPDATE_BY(rs.getString("UPDATE_BY"));
 
                 users.add(user);
             }
-        } catch (Exception e) {
-
-            System.out.println("Error finding users" + e.toString());
-
+        } catch (SQLException e) {
+            System.err.println("Error finding all users: " + e.getMessage());
+            throw new Exception("Failed to find all users", e);
         }
         return users;
     }
 
     @Override
     public int update(UserDto user) throws Exception {
-
-        try ( Connection conn = new DBConnection().getOracleConnection();  PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE);  ResultSet rs = stmt.executeQuery();) {
+        try (Connection conn = new DBConnection().getOracleConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_UPDATE)) {
+            
             stmt.setString(1, user.getNAME());
             stmt.setString(2, user.getEMAIL());
-            // Handle Date format correctly
-            if (user.getDOB() != null) {
-                stmt.setString(3, user.getDOB());
-            } else {
-                stmt.setNull(3, java.sql.Types.CHAR);
-            }
-            
+            stmt.setString(3, user.getDOB());
+            stmt.setString(4, user.getUPDATE_DATE());
+            stmt.setString(5, user.getUPDATE_BY());
+            stmt.setString(6, user.getUSER_ID()); // WHERE clause parameter
 
-            // WHERE clause parameter
-            stmt.setString(4, user.getUSER_ID());
-                    return stmt.executeUpdate();
-
-
-        } catch (Exception e) {
-
-            System.out.println("Error finding users" + e.toString());
-
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error updating user: " + e.getMessage());
+            throw new Exception("Failed to update user", e);
         }
-      return 0;
     }
     
     @Override
-    public int delete(String id) throws Exception{
-    return 0;
+    public int delete(String userId) throws Exception {
+        try (Connection conn = new DBConnection().getOracleConnection();
+             PreparedStatement stmt = conn.prepareStatement(SQL_DELETE)) {
+            
+            stmt.setString(1, userId);
+            
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error deleting user: " + e.getMessage());
+            throw new Exception("Failed to delete user", e);
+        }
     }
-
-
 }
