@@ -4,10 +4,18 @@
  */
 package features.users.dao;
 
+import features.users.dto.UserDto;
+import java.util.List;
+
 /**
  *
  * @author macpc3
  */
-public class UsersDao {
+public interface UsersDao {
+    List<UserDto> findAll() throws Exception;
+    UserDto findById(String id) throws Exception;
+    int insert(UserDto user) throws Exception;
+    int update(UserDto user) throws Exception;
+    int delete(String id) throws Exception;
     
 }
